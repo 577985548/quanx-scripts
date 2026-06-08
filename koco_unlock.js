@@ -2,7 +2,7 @@
  *
  * Koco Widgets 会员解锁脚本
  * 基于 RevenueCat 订阅系统
- * 包含签名绕过
+ * 正确的产品标识符版本
  *
  * 使用声明：此脚本仅供学习与交流，请在下载使用24小时内删除！
  *
@@ -40,7 +40,7 @@ if (body) {
   try {
     let obj = JSON.parse(body);
 
-    // 会员数据模板
+    // 会员数据模板 - 使用正确的权益名称 "Subscription"
     const vipData = {
       "expires_date": "2099-12-31T23:59:59Z",
       "original_purchase_date": "2026-01-01T00:00:00Z",
@@ -53,23 +53,28 @@ if (body) {
 
     // 处理 subscribers API 和 receipts API
     if (obj.subscriber) {
+      // 使用正确的权益名称 "Subscription"
       obj.subscriber.entitlements = {
-        "premium": vipData,
-        "pro": vipData,
-        "plus": vipData,
-        "PocketWidget": vipData,
-        "PocketWidgets": vipData
+        "Subscription": vipData
       };
 
+      // 使用正确的产品 ID
       obj.subscriber.subscriptions = {
-        "com.niko.pocketwidgets.premium": {
+        "com.niko.PocketWidgetsApp.lifetime": {
           ...vipData,
           "unsubscribe_detected_at": null,
           "billing_issues_detected_at": null,
           "store_transaction_id": "999999999999999",
           "auto_resume_date": null
         },
-        "com.niko.pocketwidgets.pro": {
+        "com.niko.PocketWidgetsApp.annual": {
+          ...vipData,
+          "unsubscribe_detected_at": null,
+          "billing_issues_detected_at": null,
+          "store_transaction_id": "999999999999999",
+          "auto_resume_date": null
+        },
+        "com.niko.PocketWidgetsApp.lifetimePlus": {
           ...vipData,
           "unsubscribe_detected_at": null,
           "billing_issues_detected_at": null,
@@ -78,7 +83,7 @@ if (body) {
         }
       };
 
-      console.log("✅ Koco 数据修改成功");
+      console.log("✅ Koco 数据修改成功（正确的标识符）");
     }
 
     $done({ body: JSON.stringify(obj) });
