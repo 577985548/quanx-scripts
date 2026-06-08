@@ -7,8 +7,10 @@
  *
  ====================================
  [rewrite_local]
- # Koco Widgets 会员解锁
+ # Koco Widgets 会员解锁 - subscribers API
  ^https://api\.revenuecat\.com/v1/subscribers/.* url script-response-body https://raw.githubusercontent.com/577985548/quanx-scripts/main/koco_unlock.js
+ # Koco Widgets 会员解锁 - receipts API
+ ^https://api\.revenuecat\.com/v1/receipts url script-response-body https://raw.githubusercontent.com/577985548/quanx-scripts/main/koco_unlock.js
 
  [mitm]
  hostname = api.revenuecat.com
@@ -17,41 +19,67 @@
  */
 
 let body = $response.body;
+let url = $request.url;
 
 try {
   let obj = JSON.parse(body);
 
-  if (obj.subscriber) {
-    // 填充会员权益
+  // 会员数据模板
+  const vipData = {
+    "expires_date": "2099-12-31T23:59:59Z",
+    "original_purchase_date": "2026-01-01T00:00:00Z",
+    "purchase_date": "2026-01-01T00:00:00Z",
+    "store": "app_store",
+    "is_sandbox": false,
+    "ownership_type": "PURCHASED",
+    "period_type": "normal"
+  };
+
+  // 处理 subscribers API
+  if (url.includes("/subscribers/") && obj.subscriber) {
     obj.subscriber.entitlements = {
-      "premium": {
-        "expires_date": "2099-12-31T23:59:59Z",
-        "product_identifier": "com.niko.pocketwidgets.premium",
-        "purchase_date": "2026-01-01T00:00:00Z",
-        "original_purchase_date": "2026-01-01T00:00:00Z",
-        "store": "app_store",
-        "is_sandbox": false,
-        "ownership_type": "PURCHASED",
-        "period_type": "normal"
-      }
+      "premium": vipData,
+      "pro": vipData,
+      "plus": vipData
     };
 
-    // 填充订阅信息
     obj.subscriber.subscriptions = {
       "com.niko.pocketwidgets.premium": {
-        "expires_date": "2099-12-31T23:59:59Z",
-        "original_purchase_date": "2026-01-01T00:00:00Z",
-        "purchase_date": "2026-01-01T00:00:00Z",
-        "period_type": "normal",
-        "store": "app_store",
-        "is_sandbox": false,
+        ...vipData,
         "unsubscribe_detected_at": null,
         "billing_issues_detected_at": null,
-        "ownership_type": "PURCHASED"
+        "store_transaction_id": "999999999999999",
+        "auto_resume_date": null
+      },
+      "com.niko.pocketwidgets.pro": {
+        ...vipData,
+        "unsubscribe_detected_at": null,
+        "billing_issues_detected_at": null,
+        "store_transaction_id": "999999999999999",
+        "auto_resume_date": null
       }
     };
 
-    console.log("✅ Koco 会员解锁成功");
+    console.log("✅ Koco subscribers 解锁成功");
+  }
+
+  // 处理 receipts API
+  if (url.includes("/receipts") && obj.subscriber) {
+    obj.subscriber.entitlements = {
+      "premium": vipData,
+      "pro": vipData,
+      "plus": vipData
+    };
+
+    obj.subscriber.subscriptions = {
+      "com.niko.pocketwidgets.premium": {
+        ...vipData,
+        "unsubscribe_detected_at": null,
+        "billing_issues_detected_at": null
+      }
+    };
+
+    console.log("✅ Koco receipts 解锁成功");
   }
 
   $done({ body: JSON.stringify(obj) });
