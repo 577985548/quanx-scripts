@@ -1,3 +1,21 @@
+/*
+ *
+ * Koco Widgets 会员解锁脚本
+ * 基于 RevenueCat 订阅系统
+ *
+ * 使用声明：此脚本仅供学习与交流，请在下载使用24小时内删除！请勿在中国大陆转载与贩卖！
+ *
+ ====================================
+ [rewrite_local]
+ # Koco Widgets 会员解锁
+ ^https://api\.revenuecat\.com/v1/subscribers/.* url script-response-body https://raw.githubusercontent.com/577985548/quanx-scripts/main/koco_unlock.js
+
+ [mitm]
+ hostname = api.revenuecat.com
+ ====================================
+ *
+ */
+
 let body = $response.body;
 
 try {
@@ -33,7 +51,7 @@ try {
       }
     };
 
-    console.log("✅ Koco 解锁成功");
+    console.log("✅ Koco 会员解锁成功");
   }
 
   $done({ body: JSON.stringify(obj) });
